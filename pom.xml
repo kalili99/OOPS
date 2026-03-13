@@ -347,6 +347,18 @@ SPDX-License-Identifier: Apache-2.0
   </build>
 
   <dependencies>
+    <!--
+    NUEVO/PRUEBA
+    -->
+    <dependency>
+      <groupId>dev.langchain4j</groupId>
+      <artifactId>langchain4j-ollama</artifactId>
+      <version>0.31.0</version>
+    </dependency>
+    <!--
+     NUEVO/PRUEBA
+     -->
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

@@ -19,7 +19,10 @@ import es.upm.fi.oeg.oops.PitfallInfo;
 import es.upm.fi.oeg.oops.RuleScope;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.ontology.OntResource;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.kohsuke.MetaInfServices;
 
@@ -38,6 +41,28 @@ public class P20 implements Checker {
 
     public static final CheckerInfo INFO = new CheckerInfo(PITFALL_INFO);
 
+    private OntProperty skosLabel;
+    private OntProperty skosDef;
+    private OntProperty skosAltLabel;
+    private OntProperty dctDesc;
+    private OntProperty oboDef;
+
+    public P20() {
+        final OntModel annotations = ModelFactory.createOntologyModel();
+        annotations.createObjectProperty("http://www.w3.org/2004/02/skos/core#definition");
+        annotations.createObjectProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+        annotations.createObjectProperty("https://www.w3.org/2009/08/skos-reference/skos.html#altLabel");
+
+        annotations.createObjectProperty("http://purl.org/dc/terms/description");
+
+        this.skosDef = annotations.getOntProperty("http://www.w3.org/2004/02/skos/core#definition");
+        this.skosLabel = annotations.getOntProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+        this.skosAltLabel = annotations.getOntProperty("https://www.w3.org/2009/08/skos-reference/skos.html#altLabel");
+
+        this.dctDesc = annotations.getOntProperty("http://purl.org/dc/terms/description");
+        this.oboDef = annotations.getOntProperty("http://purl.obolibrary.org/obo/IAO_0000118");
+
+    }
     @Override
     public CheckerInfo getInfo() {
         return INFO;
@@ -58,8 +83,66 @@ public class P20 implements Checker {
 
         for (final PT ontoRes : new ExtIterIterable<>(allResGen.get())) {
             // try {
-            final String label = ontoRes.getLabel(null);
-            final String comment = ontoRes.getComment(null);
+            //HE QUITADO FINAL
+            String label = ontoRes.getLabel(null);
+            String comment = ontoRes.getComment(null);
+
+            //skos prefLabel
+            String skosPref = null;
+            if (ontoRes.getPropertyValue(skosLabel) != null) {
+                skosPref = ontoRes.getPropertyValue(skosLabel).toString();
+            }
+
+            //skos AltaLabel
+            String skosAlt = null;
+            if (ontoRes.getPropertyValue(skosAltLabel) != null) {
+                skosAlt = ontoRes.getPropertyValue(skosAltLabel).toString();
+            }
+
+            //obo
+            String obo = null;
+            if (ontoRes.getPropertyValue(oboDef) != null) {
+                obo = ontoRes.getPropertyValue(oboDef).toString();
+            }
+
+            //skos definition
+            String skosDefinition = null;
+            if (ontoRes.getPropertyValue(skosDef) != null) {
+                skosDefinition = ontoRes.getPropertyValue(skosDef).toString();
+            }
+
+            //dc description por coherencia??
+            String dctDescription = null;
+            if (ontoRes.getPropertyValue(dctDesc) != null) {
+                dctDescription = ontoRes.getPropertyValue(dctDesc).toString();
+            }
+
+            System.out.println("P20" + skosPref);
+            System.out.println("P20 label" + label);
+            System.out.println("P20 comment" + comment);
+
+            if (label == null) {
+                if (skosPref != null) {
+                    label = skosPref;
+                }
+                if (skosAlt != null) {
+                    label = skosAlt;
+                }
+                if (obo != null) {
+                    label = obo;
+                }
+            }
+
+            if (comment == null) {
+                if (skosDefinition != null) {
+                    comment = skosDefinition;
+                }
+                if (dctDescription != null) {
+                    comment = dctDescription;
+                }
+            }
+            //CAMBIAR ESTO??
+
             if ((label != null) && (comment != null)) {
                 boolean pitfall = false;
                 if (label.isEmpty() || comment.isEmpty()) {

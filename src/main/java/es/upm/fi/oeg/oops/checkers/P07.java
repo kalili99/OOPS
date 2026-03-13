@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.Checker;
 import es.upm.fi.oeg.oops.CheckerInfo;
@@ -41,6 +45,18 @@ public class P07 implements Checker {
         return INFO;
     }
 
+    public static String askLLM(String text) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Traduce la siguiente palabra al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es: "
+                        + text);
+
+        return respuesta;
+
+    }
     @Override
     public void check(final CheckingContext context) throws JWNLException {
 
@@ -53,8 +69,12 @@ public class P07 implements Checker {
         final Set<OntClass> withPitfall = new HashSet<>();
         for (final OntClass ontoClass : classes) {
             final String localName = ontoClass.getLocalName();
-            final String tokenizedString = Tokenizer.tokenizedString(localName);
-            for (final String token : Tokenizer.tokenize(localName)) {
+
+            final String localName2 = askLLM(localName);
+            System.out.println(localName2);
+
+            final String tokenizedString = Tokenizer.tokenizedString(localName2);
+            for (final String token : Tokenizer.tokenize(localName2)) {
                 if (token.equalsIgnoreCase("and") || token.equalsIgnoreCase("or")) {
                     // Note that the synonym check should be done on the tokenized string.
                     final boolean hasSynSets = dictionary.hasSynsets(tokenizedString);

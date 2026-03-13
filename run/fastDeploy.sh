@@ -16,7 +16,7 @@ script_name="$(basename "$script_path")"
 
 # parameters
 tomcat_webapps_root="/var/lib/tomcat10/webapps"
-webapp_oops_root="$tomcat_webapps_root/oops-2.0.0-SNAPSHOT"
+webapp_oops_root="$tomcat_webapps_root/oops-0.3.0-SNAPSHOT"
 
 function print_help() {
 

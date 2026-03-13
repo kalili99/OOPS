@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.Checker;
 import es.upm.fi.oeg.oops.CheckerInfo;
@@ -53,6 +57,19 @@ public class P03 implements Checker {
         return INFO;
     }
 
+    public static String testLLM(String text) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Traduce la siguiente palabra al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es: "
+                        + text);
+
+        return respuesta;
+
+    }
+
     @Override
     public void check(final CheckingContext context) {
 
@@ -60,7 +77,12 @@ public class P03 implements Checker {
 
         for (final ObjectProperty property : new ExtIterIterable<>(model.listObjectProperties())) {
             final String localName = property.getLocalName();
-            if (localName != null && IS_ALTS_LOWER.contains(localName.toLowerCase()) && !Checker.fromModels(property)) {
+            String localName2 = "";
+            System.out.println("TEXTO ORIGINAL" + localName);
+            localName2 = testLLM(localName);
+            System.out.println(localName2);
+            if (localName2 != null && IS_ALTS_LOWER.contains(localName2.toLowerCase())
+                    && !Checker.fromModels(property)) {
                 context.addResult(PITFALL_INFO, property);
             }
         }

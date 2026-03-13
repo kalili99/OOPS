@@ -61,14 +61,24 @@ public class P08 implements Checker {
 
     private OntProperty skosDef;
     private OntProperty dctDesc;
+    //private OntProperty lemonLexicalEntry;
+    private OntProperty oboDef;
+    private OntProperty skosLabel;
 
     public P08() {
         final OntModel annotations = ModelFactory.createOntologyModel();
         annotations.createObjectProperty("http://www.w3.org/2004/02/skos/core#definition");
         annotations.createObjectProperty("http://purl.org/dc/terms/description");
 
+        annotations.createObjectProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+        annotations.createObjectProperty("http://purl.obolibrary.org/obo/IAO_0000118");
+
         this.skosDef = annotations.getOntProperty("http://www.w3.org/2004/02/skos/core#definition");
         this.dctDesc = annotations.getOntProperty("http://purl.org/dc/terms/description");
+        this.oboDef = annotations.getOntProperty("http://purl.obolibrary.org/obo/IAO_0000118");
+
+        this.skosLabel = annotations.getOntProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+
     }
 
     @Override
@@ -93,7 +103,7 @@ public class P08 implements Checker {
         analyze(rToAnalyze, resNoAnnotation, resComment, resLabel);
         analyze(aToAnalyze, resNoAnnotation, resComment, resLabel);
 
-        // annotations.close();
+        //annotations.close();
 
         context.addResultsIndividual(PITFALL_INFO_A, resNoAnnotation);
         context.addResultsIndividual(PITFALL_INFO_C, resComment);
@@ -120,18 +130,45 @@ public class P08 implements Checker {
                 dctDescription = resource.getPropertyValue(dctDesc).toString();
             }
 
-            // System.out.println("valor de skos def: " + resource.getPropertyValue(skosDef));
+            String skosPref = null;
+            if (resource.getPropertyValue(skosLabel) != null) {
+                skosPref = resource.getPropertyValue(skosLabel).toString();
+            }
+
+            String oboLabel = null;
+            if (resource.getPropertyValue(oboDef) != null) {
+                oboLabel = resource.getPropertyValue(oboDef).toString();
+            }
+
+            System.out.println(label);
+
+            System.out.println("valor de LEMONDEF def: " + resource.getPropertyValue(oboDef));
+
+            System.out.println("valor de skos def: " + resource.getPropertyValue(skosDef));
+
+            System.out.println("valor de obo def: " + resource.getPropertyValue(skosLabel));
+            System.out.println(oboLabel);
+            System.out.println(skosPref);
 
             if (!Checker.fromModels(resource)) {
-                if ((label == null) && (comment == null) && (definition == null) && (dctDescription == null)) {
+                if ((label == null) && (comment == null) && (definition == null) && (dctDescription == null)
+                        && (skosPref == null)) {
                     // no annotations
+                    System.out.println("CASO 1");
                     resNoAnnotation.add(resource);
-                } else if ((label == null) && ((comment != null) || (definition != null) || (dctDescription != null))) {
+                } else if ((label == null && skosPref == null)
+                        && ((comment != null) || (definition != null) || (dctDescription != null))) {
                     // only comment or skos:definition or dct:description
-                    resNoAnnotation.add(resource);
-                } else if ((label != null) && (comment == null) && (definition == null) && (dctDescription == null)) {
+                    System.out.println("CASO 2");
+                    //resNoAnnotation.add(resource); //la solucion es simple
+                    resLabel.add(resource);
+
+                } else if ((label != null || skosPref != null) && (comment == null) && (definition == null)
+                        && (dctDescription == null)) {
                     // only label
-                    resNoAnnotation.add(resource);
+                    System.out.println("CASO 3");
+                    //resNoAnnotation.add(resource);
+                    resComment.add(resource);
                 }
             }
             // } catch (final LiteralRequiredException exc) {

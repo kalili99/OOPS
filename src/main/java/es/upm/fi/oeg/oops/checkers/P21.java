@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.Checker;
 import es.upm.fi.oeg.oops.CheckerInfo;
@@ -43,13 +47,29 @@ public class P21 implements Checker {
         return INFO;
     }
 
+    public static String askLLM(String text) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Traduce el siguiente conjunto de palabras unidas al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es:"                        + text);
+
+        return respuesta;
+
+    }
+
     @Override
     public void check(final CheckingContext context) {
 
         final ExtIterIterable<OntClass> classes = new ExtIterIterable<>(context.getModel().listNamedClasses());
         for (final OntClass ontoClass : classes) {
             final String localName = ontoClass.getLocalName();
-            for (final String token : Tokenizer.tokenize(localName)) {
+
+            final String localName2 = askLLM(localName);
+            System.out.println(localName2);
+
+            for (final String token : Tokenizer.tokenize(localName2)) {
                 final String tokenLower = token.toLowerCase();
                 if (MISC_TOKENS.contains(tokenLower) && !Checker.fromModels(ontoClass)) {
                     context.addResult(PITFALL_INFO, ontoClass);

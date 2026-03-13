@@ -109,6 +109,78 @@ public class P04 implements Checker {
                 }
             }
 
+            final List<ObjectProperty> frozenObjectProperties = model.listObjectProperties().toList();
+
+            System.out.println("TAMAÑO DE LISTA OBJ: " + frozenObjectProperties.size() + "holi"
+                    + frozenObjectProperties.toString());
+            for (int i = 0; i < frozenObjectProperties.size(); i++) {
+                boolean hasDomain = true;
+                boolean hasRange = true;
+                boolean hasHierachy = true;
+                boolean hasEquivalent = true;
+                boolean hasInverse = true;
+                ObjectProperty prueba1 = frozenObjectProperties.get(i);
+                System.out.println("Dominio " + prueba1.listDomain().hasNext());
+                prueba1.listDomain();
+
+                if (prueba1.listSubProperties().hasNext() == false
+                        && prueba1.listSuperProperties().hasNext() == false) {
+                    hasHierachy = false;
+                }
+
+                if (prueba1.listEquivalentProperties().hasNext() == false) {
+                    hasInverse = false;
+                }
+
+                if (prueba1.listInverse().hasNext() == false) {
+                    hasEquivalent = false;
+                }
+
+                if (prueba1.listDomain().hasNext() == false) {
+                    hasDomain = false;
+                }
+                if (prueba1.listRange().hasNext() == false) {
+                    hasRange = false;
+                }
+
+                if (!hasHierachy && !hasInverse && !hasEquivalent && !hasDomain && !hasRange) {
+                    context.addResult(PITFALL_INFO, prueba1);
+                }
+            }
+
+            final List<DatatypeProperty> frozenDatatypeProperties = model.listDatatypeProperties().toList();
+
+            System.out.println("TAMAÑO DE LISTA OBJ: " + frozenDatatypeProperties.size());
+            for (int i = 0; i < frozenDatatypeProperties.size(); i++) {
+                boolean hasDomain = true;
+                boolean hasRange = true;
+                boolean hasHierachy = true;
+                boolean hasEquivalent = true;
+                DatatypeProperty dataProp = frozenDatatypeProperties.get(i);
+                System.out.println("Dominio " + dataProp.listDomain().hasNext());
+                dataProp.listDomain();
+
+                if (dataProp.listSubProperties().hasNext() == false
+                        && dataProp.listSuperProperties().hasNext() == false) {
+                    hasHierachy = false;
+                }
+
+                if (dataProp.listEquivalentProperties().hasNext() == false) {
+                    hasEquivalent = false;
+                }
+
+                if (dataProp.listDomain().hasNext() == false) {
+                    hasDomain = false;
+                }
+                if (dataProp.listRange().hasNext() == false) {
+                    hasRange = false;
+                }
+
+                if (!hasHierachy && !hasEquivalent && !hasDomain && !hasRange) {
+                    context.addResult(PITFALL_INFO, dataProp);
+                }
+            }
+
             boolean hasComplexAxiom = false;
             for (final OntClass axiom : axiomsAll) {
                 if (!axiom.isURIResource()) {

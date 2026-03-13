@@ -27,7 +27,9 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.kohsuke.MetaInfServices;
@@ -54,6 +56,16 @@ public class P32 implements Checker {
         return INFO;
     }
 
+    private OntProperty skosLabel;
+    private OntProperty oboLabel;
+    public P32() {
+        final OntModel annotations = ModelFactory.createOntologyModel();
+        annotations.createObjectProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+        annotations.createObjectProperty("http://purl.obolibrary.org/obo/IAO_0000118");
+
+        this.oboLabel = annotations.getOntProperty("http://purl.obolibrary.org/obo/IAO_0000118");
+        this.skosLabel = annotations.getOntProperty("http://www.w3.org/2004/02/skos/core#prefLabel");
+    }
     @Override
     public void check(final CheckingContext context) {
 
