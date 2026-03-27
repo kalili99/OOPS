@@ -7,6 +7,9 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
 import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.CamelCase;
@@ -31,9 +34,6 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.kohsuke.MetaInfServices;
-
-import static es.upm.fi.oeg.oops.Constants.LLM_IP;
-import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
 
 @MetaInfServices(Checker.class)
 public class P30 implements Checker {
@@ -80,9 +80,9 @@ public class P30 implements Checker {
             try {
                 classTag = cls.getLabel("en");
                 if (classTag == null) {
-                    classTag0=cls.getLocalName();
+                    classTag0 = cls.getLocalName();
                     classTag = translateLLM(classTag0);
-                    System.out.println("P30 ORIGINAL "+ classTag0 +" P30 TRADUCCION " + classTag);
+                    System.out.println("P30 ORIGINAL " + classTag0 + " P30 TRADUCCION " + classTag);
                     // System.out.println("1 tag with lang:" + class_.getLocalName() + " -- " + new
                     // Tokenizar(class_tag).getTokensString());
                 } else {
@@ -93,7 +93,7 @@ public class P30 implements Checker {
                 classTag0 = cls.getLocalName();
                 classTag = translateLLM(classTag0);
                 // System.out.println("1 tag No lang:" + class_tag);
-                 System.out.println("P30 ORIGINAL "+ classTag0 +" P30 TRADUCCION " + classTag);
+                System.out.println("P30 ORIGINAL " + classTag0 + " P30 TRADUCCION " + classTag);
 
             }
             // if (classTag != null){
@@ -109,7 +109,8 @@ public class P30 implements Checker {
                     if (classFaceTag == null) {
                         classFaceTag0 = classFace.getLocalName();
                         classFaceTag = translateLLM(classFaceTag0);
-                        System.out.println("P30 ORIGINAL classFaceTag0 "+ classFaceTag0 +" P30 TRADUCCION " + classFaceTag);
+                        System.out.println(
+                                "P30 ORIGINAL classFaceTag0 " + classFaceTag0 + " P30 TRADUCCION " + classFaceTag);
                         // System.out.println("2 tag with lang:" + class_face.getLabel("en") + " -- " +
                         // class_face.getLocalName());
                     } else {
@@ -118,7 +119,8 @@ public class P30 implements Checker {
                 } catch (final Exception exc) {
                     classFaceTag0 = classFace.getLocalName();
                     classFaceTag = translateLLM(classFaceTag0);
-                    System.out.println("P30 ORIGINAL classFaceTag0 "+ classFaceTag0 +" P30 TRADUCCION " + classFaceTag);
+                    System.out
+                            .println("P30 ORIGINAL classFaceTag0 " + classFaceTag0 + " P30 TRADUCCION " + classFaceTag);
 
                     // System.out.println("2 tag NO lang:" + class_face_tag);
                 }
