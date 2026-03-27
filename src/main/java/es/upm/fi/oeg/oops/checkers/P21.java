@@ -53,7 +53,8 @@ public class P21 implements Checker {
 
         // Hacemos la petición
         String respuesta = model.generate(
-                "Traduce el siguiente conjunto de palabras unidas al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es:"                        + text);
+                "Traduce el siguiente conjunto de palabras unidas al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es:"
+                        + text);
 
         return respuesta;
 

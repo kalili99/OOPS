@@ -48,7 +48,6 @@ public class P07 implements Checker {
     public static String askLLM(String text) {
         // Configuramos el modelo local
         OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
-
         // Hacemos la petición
         String respuesta = model.generate(
                 "Traduce la siguiente palabra al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es: "

@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.Checker;
 import es.upm.fi.oeg.oops.CheckerInfo;
@@ -67,6 +71,17 @@ public class P12 implements Checker {
         analyze(context, () -> model.listDatatypeProperties());
     }
 
+    public static String askLLM(String text1, String text2) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+        // Hacemos la petición  BirthPlace   isBornInPlace son sinonimos en significado? Responde solo si o no
+        String respuesta = model.generate("La propiedad  " + text1 + "y la propiedad " + text2
+                + "son sinonimos en significado? Responde solo si o no");
+
+        return respuesta;
+
+    }
+
     private void addToOutput(CheckingContext context, Map<String, Set<OntProperty>> mapResource) {
         Model outputModel = context.getOutputModel();
         final Property equivalentProp = outputModel.createProperty(Linter.NS_OOPS_DEF + "mightBeEquivalentProperty");
@@ -122,6 +137,12 @@ public class P12 implements Checker {
                                 && !element2.listEquivalentProperties().hasNext()) {
                             String localName2 = element2.getLocalName();
                             if (localName2 != null) {
+                                System.out.println("localName 1" + localName1 + " localname2 " + localName2);
+                                String respuesta = askLLM(localName1, localName2);
+
+                                System.out.println(respuesta);
+                                //POR AQUI SE AÑADIRIA YO CREO
+
                                 localName2 = localName2.replaceAll("\\W", "");
                                 localName2 = localName2.replaceAll("-", "");
                                 localName2 = localName2.replaceAll("_", "");
@@ -129,6 +150,17 @@ public class P12 implements Checker {
 
                                 if (localName1.equalsIgnoreCase(localName2) && !Checker.fromModels(element1)
                                         && !Checker.fromModels(element2)) {
+
+                                    final Set<OntProperty> values;
+                                    if (!mapResource.containsKey(localName1)) {
+                                        values = new HashSet<OntProperty>();
+                                    } else {
+                                        values = mapResource.get(localName1);
+                                    }
+                                    values.add(element1);
+                                    values.add(element2);
+                                    mapResource.put(localName1, values);
+                                } else if (respuesta.equals("Sí.")) {
                                     final Set<OntProperty> values;
                                     if (!mapResource.containsKey(localName1)) {
                                         values = new HashSet<OntProperty>();

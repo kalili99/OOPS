@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.Checker;
 import es.upm.fi.oeg.oops.CheckerInfo;
@@ -17,7 +21,9 @@ import es.upm.fi.oeg.oops.PitfallId;
 import es.upm.fi.oeg.oops.PitfallInfo;
 import es.upm.fi.oeg.oops.PitfallInfo.AccompPer;
 import es.upm.fi.oeg.oops.RuleScope;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.ontology.OntClass;
@@ -40,13 +46,28 @@ public class P10 implements Checker {
             "The ontology lacks disjoint axioms between classes "
                     + "or between properties that should be defined as disjoint. "
                     + "This pitfall is related to the guidelines provided in [6], [2] and [7].",
-            RuleScope.ONTOLOGY, Arity.ZERO, "There are no owl:disjointWith axioms defined.", AccompPer.TYPE);
+            RuleScope.CLASS, Arity.ONE, "There are no owl:disjointWith axioms defined.", AccompPer.TYPE);
 
     public static final CheckerInfo INFO = new CheckerInfo(PITFALL_INFO);
 
     @Override
     public CheckerInfo getInfo() {
         return INFO;
+    }
+    public static String askLLM(List<OntClass> subClassesList) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+        String classesName = "";
+        for (int i = 0; i < subClassesList.size(); i++) {
+            classesName = classesName + ", " + subClassesList.get(i).getLocalName();
+        }
+        System.out.println(classesName);
+        // Hacemos la petición
+        String respuesta = model.generate("Estos conceptos: " + classesName
+                + "Son disjuntos en el contexto de una ontología? Responde solo si o no");
+
+        return respuesta;
+
     }
 
     @Override
@@ -73,6 +94,7 @@ public class P10 implements Checker {
                         // there is no pitfall
                         return;
                     }
+
                 } catch (final ConversionException exc) {
                     final String classUri = exc.getMessage().split(" ")[3];
                     final OntClass cAux = context.getModel().createClass(classUri);
@@ -95,6 +117,33 @@ public class P10 implements Checker {
                 return;
             }
         }
+        //tecnicamente aqui solo se llega si no se ha detectacion disjoint en ningun punto
+        //SE VA A AÑADIR AQUI LA FUNCION EXTRA PERO HAY Q COMPROBAR CON PRINTS
+        List<OntClass> classesList = model.listNamedClasses().toList();
+        List<OntClass> subClases = new ArrayList<OntClass>(); //CAMBIAR NOMBRE
+        System.out.println("TAMAÑO LISTA DE CLASES " + classesList.size());
+        //se buscan las clases raiz para buscar sus subclases
+        for (int i = 0; i < classesList.size(); i++) {
+            if (classesList.get(i).hasSubClass()) {
+                if (classesList.get(i).listSubClasses().toList().size() > 1) {
+                    subClases.add(classesList.get(i));
+                    System.out.println("Creando lista de clases " + classesList.get(i).toString());
+                }
+            }
+        }
+
+        for (int j = 0; j < subClases.size(); j++) {
+            //AQUI SE LLAMA AL LLM PARA PREGUNTARLE SI SON DISJUNTOS
+            List<OntClass> subClassesList = subClases.get(j).listSubClasses().toList();
+            String respuesta = askLLM(subClassesList);
+            System.out.println(respuesta);
+            if (respuesta.equals("Sí.")) {
+                System.out.println("HE ENTRADO");
+                context.addResult(PITFALL_INFO, subClassesList);//revisar como se devuelve esto
+            }
+        }
+
+        //ESTE ES EL FINAL
 
         context.addResult(PITFALL_INFO, Collections.emptySet());
     }

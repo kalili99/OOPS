@@ -7,6 +7,7 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.CamelCase;
 import es.upm.fi.oeg.oops.Checker;
@@ -31,6 +32,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.kohsuke.MetaInfServices;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
 @MetaInfServices(Checker.class)
 public class P30 implements Checker {
 
@@ -50,6 +54,19 @@ public class P30 implements Checker {
         return INFO;
     }
 
+    public static String translateLLM(String text) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Traduce el siguiente conjunto de palabras unidas al inglés respetando el formato con el que esta esrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es:"
+                        + text);
+
+        return respuesta;
+
+    }
+
     @Override
     public void check(final CheckingContext context) throws JWNLException {
 
@@ -59,10 +76,13 @@ public class P30 implements Checker {
         final HashMap<String, Set<OntClass>> preResults = new HashMap<>();
         for (final OntClass cls : new ExtIterIterable<>(model.listNamedClasses())) {
             String classTag;
+            String classTag0;
             try {
                 classTag = cls.getLabel("en");
                 if (classTag == null) {
-                    classTag = cls.getLocalName();
+                    classTag0=cls.getLocalName();
+                    classTag = translateLLM(classTag0);
+                    System.out.println("P30 ORIGINAL "+ classTag0 +" P30 TRADUCCION " + classTag);
                     // System.out.println("1 tag with lang:" + class_.getLocalName() + " -- " + new
                     // Tokenizar(class_tag).getTokensString());
                 } else {
@@ -70,8 +90,11 @@ public class P30 implements Checker {
                 }
                 // System.out.println("1 tag with lang:" + class_tag);
             } catch (final Exception exc) {
-                classTag = cls.getLocalName();
+                classTag0 = cls.getLocalName();
+                classTag = translateLLM(classTag0);
                 // System.out.println("1 tag No lang:" + class_tag);
+                 System.out.println("P30 ORIGINAL "+ classTag0 +" P30 TRADUCCION " + classTag);
+
             }
             // if (classTag != null){
             // class_tag_T = new Tokenizar(class_tag).getTokensString();
@@ -79,17 +102,24 @@ public class P30 implements Checker {
 
             for (final OntClass classFace : new ExtIterIterable<>(model.listNamedClasses())) {
                 String classFaceTag;
+                String classFaceTag0;
+
                 try {
                     classFaceTag = classFace.getLabel("en");
                     if (classFaceTag == null) {
-                        classFaceTag = classFace.getLocalName();
+                        classFaceTag0 = classFace.getLocalName();
+                        classFaceTag = translateLLM(classFaceTag0);
+                        System.out.println("P30 ORIGINAL classFaceTag0 "+ classFaceTag0 +" P30 TRADUCCION " + classFaceTag);
                         // System.out.println("2 tag with lang:" + class_face.getLabel("en") + " -- " +
                         // class_face.getLocalName());
                     } else {
                         classFaceTag = CamelCase.toCamelCase(classFaceTag);
                     }
                 } catch (final Exception exc) {
-                    classFaceTag = classFace.getLocalName();
+                    classFaceTag0 = classFace.getLocalName();
+                    classFaceTag = translateLLM(classFaceTag0);
+                    System.out.println("P30 ORIGINAL classFaceTag0 "+ classFaceTag0 +" P30 TRADUCCION " + classFaceTag);
+
                     // System.out.println("2 tag NO lang:" + class_face_tag);
                 }
                 // if (class_face_tag != null){
