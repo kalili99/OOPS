@@ -67,6 +67,18 @@ public class P30 implements Checker {
 
     }
 
+    public static String equivalentLLM(String text1, String text2) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate("La propiedad  " + text1 + "y la propiedad " + text2
+                + "son sinonimos en significado? Responde solo si o no");
+
+        return respuesta;
+
+    }
+
     @Override
     public void check(final CheckingContext context) throws JWNLException {
 
@@ -139,9 +151,16 @@ public class P30 implements Checker {
                     // esto lo he cambiado yo hasta que se mejor la busqueda. Tambien cambiado el if
                     // Map<String,String> synonymous_part = dictionary.containSynonymWord(class_tag,
                     // class_face_tag);
+                    //He quitado el final
+                    boolean synonymousPart = dictionary.areSynonymousNouns(classTag, classFaceTag);
 
-                    final boolean synonymousPart = dictionary.areSynonymousNouns(classTag, classFaceTag);
-
+                    if (!synonymousPart) {
+                        String respuesta30 = equivalentLLM(classTag, classFaceTag);
+                        System.out.println("respuesta30 equivalentes? => " + respuesta30);
+                        if (respuesta30.equals("Sí.")) {
+                            synonymousPart = true;
+                        }
+                    }
                     // System.out.println("Size mapa:" + synonymous_part.size() + " Clase:"+class_tag+" Clase
                     // contra:"+class_face_tag);
                     // if(synonymous_part.size()!=0){

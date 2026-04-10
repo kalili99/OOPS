@@ -7,6 +7,10 @@
 
 package es.upm.fi.oeg.oops.checkers;
 
+import static es.upm.fi.oeg.oops.Constants.LLM_IP;
+import static es.upm.fi.oeg.oops.Constants.LLM_MODEL;
+
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import es.upm.fi.oeg.oops.Arity;
 import es.upm.fi.oeg.oops.CamelCase;
 import es.upm.fi.oeg.oops.Checker;
@@ -50,6 +54,32 @@ public class P31 implements Checker {
 
     public static final CheckerInfo INFO = new CheckerInfo(PITFALL_INFO);
 
+    public static String translateLLM(String text) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Traduce el siguiente conjunto de palabras unidas al inglés respetando el formato con el que esta escrito y devolviendo en la respuesta solo el texto traducido sin añadadidos. La palabra a traducir es:"
+                        + text);
+
+        return respuesta;
+
+    }
+    //
+    public static String equivalentLLM(String text1, String text2) {
+        // Configuramos el modelo local
+        OllamaChatModel model = OllamaChatModel.builder().baseUrl(LLM_IP).modelName(LLM_MODEL).build();
+
+        // Hacemos la petición
+        String respuesta = model.generate(
+                "Do each and every individual of one the classes also belong to the other class and vice-versa? the classes are: "
+                        + text1 + " and " + text2 + ". Answer only yes or no");
+
+        return respuesta;
+
+    }
+
     @Override
     public CheckerInfo getInfo() {
         return INFO;
@@ -71,6 +101,10 @@ public class P31 implements Checker {
                 classTag = cls.getLabel("en");
                 if (classTag == null) {
                     classTag = cls.getLocalName();
+                    String translatedClassTag = CamelCase.toCamelCase(translateLLM(classTag));
+                    System.out.println("P31 ORIGINAL = " + classTag + " P31 TRADUCIDA " + translatedClassTag);
+                    classTag = translatedClassTag;
+
                     // System.out.println("1 tag with lang:" + class_.getLocalName() + " -- " + new
                     // Tokenizar(class_tag).getTokensString());
                 } else {
@@ -89,6 +123,9 @@ public class P31 implements Checker {
                     clsFaceTag = clsFace.getLabel("en");
                     if (clsFaceTag == null) {
                         clsFaceTag = clsFace.getLocalName();
+                        String translated = CamelCase.toCamelCase(translateLLM(clsFaceTag));
+                        System.out.println("P31 ORIGINAL = " + clsFaceTag + " P31 TRADUCIDA " + translated);
+                        clsFaceTag = translated;
                         // System.out.println("2 tag with lang:" + class_face.getLabel("en") + " -- " +
                         // class_face.getLocalName());
                     } else {
@@ -99,6 +136,9 @@ public class P31 implements Checker {
                     }
                 } catch (final Exception exc) {
                     clsFaceTag = clsFace.getLocalName();
+                    String translated2 = CamelCase.toCamelCase(translateLLM(clsFaceTag));
+                    System.out.println("P31 ORIGINAL = " + clsFaceTag + " P31 TRADUCIDA " + translated2);
+
                     // System.out.println("2 tag NO lang:" + class_face_tag);
                 }
 
@@ -143,7 +183,9 @@ public class P31 implements Checker {
                             } else if (dictionary.containSynonymsForAllNoStopWords(classTag, clsFaceTag)
                                     && dictionary.containSynonymsForAllNoStopWords(clsFaceTag, classTag)) {
                                 // no hay pitfall
-                            } else {
+                            }
+
+                            else {
                                 Map<String, String> meronymsPart = dictionary.containHypernymWord(classTag, clsFaceTag,
                                         recursiveLevel);
 
