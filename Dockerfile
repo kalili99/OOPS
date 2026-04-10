@@ -2,7 +2,7 @@ FROM tomcat:10-jdk17
 
 RUN apt-get update && apt-get install -y --no-install-recommends maven  
 
-COPY OOPS/ /oops
+COPY . /oops
 
 WORKDIR /oops/
 
