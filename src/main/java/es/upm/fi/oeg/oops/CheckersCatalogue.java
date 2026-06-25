@@ -42,23 +42,7 @@ public final class CheckersCatalogue {
                             + "to state that no individuals in class \"ClassA\" act as objects of the relationship \"relationshipS\". "
                             + "This does not imply the existence of individuals from other classes acting as objects of the relationship.\n"
                             + "\n" + "This pitfall is explained in more detail in [7].",
-                    Arity.ONE), // TODO Check if this arity is correct
-            new CheckerInfo(new CheckerId(16), Set.of(new PitfallCategoryId('N', 3), new PitfallCategoryId('S', 5)),
-                    Importance.CRITICAL, "Using a primitive class in place of a defined one",
-                    "\"Primitive\" classes are those for which there are only necessary conditions [7]. "
-                            + "They are described using rdfs:subClassOf. "
-                            + "\"Defined\" classes are those for which there are necessary and sufficient conditions [7]. "
-                            + "They are described using owl:equivalentClass. "
-                            + "This pitfall implies creating a primitive class rather than a defined one "
-                            + "in case automatic classification of individuals is intended. "
-                            + "It should be clarified that, in general, "
-                            + "nothing will be inferred to be subsumed under a primitive class by the classifier [7].\n"
-                            + "\n" + "This pitfall is related to the open world assumption.",
-                    Arity.ONE),
-            new CheckerInfo(new CheckerId(23), Set.of(new PitfallCategoryId('N', 1)), Importance.IMPORTANT,
-                    "Duplicating a datatype already provided by the implementation language",
-                    "A class and its corresponding individuals are created to represent existing datatypes in the implementation language.",
-                    Arity.ONE));
+                    Arity.ONE)); // TODO Check if this arity is correct
 
     private static List<PitfallInfo> PF_INFO = null;
     private static Map<PitfallId, PitfallInfo> PF_INFO_MAP = null;
